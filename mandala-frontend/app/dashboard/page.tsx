@@ -3,12 +3,6 @@
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import {
   Card,
   CardContent,
   CardDescription,
@@ -125,7 +119,7 @@ export default function DashboardPage() {
               <Card className="bg-gradient-to-br from-purple-50 to-white">
                 <CardHeader>
                   <CardTitle>Revenue</CardTitle>
-                  <CardDescription>This month's earnings</CardDescription>
+                  <CardDescription>This month&apos;s earnings</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold text-purple-800">$2,450</p>

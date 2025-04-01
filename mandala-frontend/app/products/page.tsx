@@ -82,7 +82,7 @@ export default function ProductsPage() {
       });
       if (!res.ok) throw new Error("Failed to add to cart");
       alert("Added to cart");
-    } catch (err) {
+    } catch  {
       alert("Error adding to cart");
     }
   };
@@ -99,7 +99,7 @@ export default function ProductsPage() {
       });
       if (!res.ok) throw new Error("Failed to add to wishlist");
       alert("Added to wishlist");
-    } catch (err) {
+    } catch  {
       alert("Error adding to wishlist");
     }
   };
