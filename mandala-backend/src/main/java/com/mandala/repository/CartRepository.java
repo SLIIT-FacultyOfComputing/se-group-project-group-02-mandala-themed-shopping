@@ -6,4 +6,4 @@ import com.mandala.models.Cart;
 
 public interface CartRepository extends JpaRepository<Cart, Long> {
 
-}
+}r
