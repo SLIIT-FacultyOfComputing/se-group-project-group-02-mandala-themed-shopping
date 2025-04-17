@@ -82,9 +82,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // ✅ New internal-use method for backend needs (e.g. wishlist logic)
-    @Override
-    public Product getProductEntityById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
-    }
+    // @Override
+    // public Product getProductEntityById(Long id) {
+    //     return productRepository.findById(id)
+    //             .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+    // }
 }
