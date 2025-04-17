@@ -57,7 +57,6 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDTO updateProduct(Long id, ProductDTO dto) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
-
         updateFields(product, dto);
         return mapToResponse(productRepository.save(product));
     }
@@ -80,5 +79,12 @@ public class ProductServiceImpl implements ProductService {
         product.setImages(dto.getImages());
         product.setColors(dto.getColors());
         product.setSizes(dto.getSizes());
+    }
+
+    // ✅ New internal-use method for backend needs (e.g. wishlist logic)
+    @Override
+    public Product getProductEntityById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
     }
 }

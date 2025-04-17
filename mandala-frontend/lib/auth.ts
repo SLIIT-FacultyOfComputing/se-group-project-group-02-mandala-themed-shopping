@@ -10,7 +10,7 @@ export const readRoleFromJwt = (accessToken: string): string | null => {
   try {
     const decoded: JwtPayload = jwtDecode<JwtPayload>(accessToken);
     return decoded.role;
-  } catch (error) {
+  } catch  {
     return null;
   }
 };
@@ -19,7 +19,7 @@ export const readNameFromJwt = (accessToken: string): string | null => {
   try {
     const decoded: JwtPayload = jwtDecode<JwtPayload>(accessToken);
     return decoded.sub;
-  } catch (error) {
+  } catch  {
     return null;
   }
 };
