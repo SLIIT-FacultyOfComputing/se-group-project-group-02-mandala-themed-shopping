@@ -3,26 +3,26 @@ package com.mandala.controller;
 import com.mandala.dto.CartItemDTO;
 import com.mandala.models.User;
 import com.mandala.service.CartService;
-import lombok.RegigirquiredArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('USER', 'ADMIN')")  // Optional
 public class CartController {
 
     private final CartService cartService;
 
-    @PostMapping
-    public ResponseEntity<?> addToCart(
+    @PostMapping("/checkout")
+    public ResponseEntity<String> checkoutCart(
             @AuthenticationPrincipal User user,
-            @RequestBody CartItemDTO dto
+            @RequestBody List<CartItemDTO> items
     ) {
-        cartService.addItemToCart(user, dto);
-        return ResponseEntity.ok().build();
+        cartService.processCheckout(user, items);
+        return ResponseEntity.ok("Checkout completed and saved to DB.");
     }
 }
