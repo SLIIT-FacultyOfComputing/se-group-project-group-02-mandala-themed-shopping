@@ -11,6 +11,10 @@ export type User = {
   role: string
   phoneNumber?: string
 }
+interface TableMeta {
+  onEdit?: (id: string | number) => void;
+  onDelete?: (id: string | number) => void;
+}
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -76,9 +80,9 @@ export const columns: ColumnDef<User>[] = [
     id: "actions",
     header: "Actions",
     cell: ({ row, table }) => {
-      const user = row.original
-      const meta = table.options.meta as any
-
+      const user = row.original;
+      const meta = table.options.meta as TableMeta;
+    
       return (
         <div className="flex items-center justify-center space-x-2">
           <Button
@@ -100,8 +104,9 @@ export const columns: ColumnDef<User>[] = [
             <span className="sr-only">Delete</span>
           </Button>
         </div>
-      )
+      );
     },
+    
   },
 ]
 

@@ -1,11 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 
 export default function Navbar() {
-  const router = useRouter();
 
   const handleLogout = () => {
     signOut({ callbackUrl: "/login" });
