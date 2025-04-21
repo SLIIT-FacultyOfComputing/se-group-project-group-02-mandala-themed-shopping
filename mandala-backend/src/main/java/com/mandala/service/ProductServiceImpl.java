@@ -81,16 +81,10 @@ public class ProductServiceImpl implements ProductService {
         product.setSizes(dto.getSizes());
     }
 
+    // ✅ New internal-use method for backend needs (e.g. wishlist logic)
     @Override
     public Product getProductEntityById(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getProductEntityById'");
+        return productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
     }
-
-    // ✅ New internal-use method for backend needs (e.g. wishlist logic)
-    // @Override
-    // public Product getProductEntityById(Long id) {
-    //     return productRepository.findById(id)
-    //             .orElseThrow(() -> new EntityNotFoundException("Product not found"));
-    // }
 }
