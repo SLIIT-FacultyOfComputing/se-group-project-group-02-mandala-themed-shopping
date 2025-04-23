@@ -42,7 +42,7 @@ public class CartService {
 // <<<<<<< nipun-backend
 //         Optional<Cart> optionalCart = cartRepository.findByUserId(userId);
 // =======
-//         Optional<Cart> optionalCart = cartRepository.findById(userId);
+       Optional<Cart> optionalCart = cartRepository.findById(userId);
 // >>>>>>> Main-Test
         if (optionalCart.isPresent()) {
             cart = optionalCart.get();
