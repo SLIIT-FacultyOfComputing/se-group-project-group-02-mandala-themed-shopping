@@ -38,11 +38,19 @@ public class SecurityConfiguration {
                             config.setAllowCredentials(true);
                             return config;
                         }))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // FIXED: Use hasRole instead of hasAuthority
-                        .anyRequest().permitAll()
-                )
+                        .authorizeHttpRequests(auth -> auth
+    .requestMatchers("/api/auth/**").permitAll()              // Login & register = public
+    .requestMatchers("/api/products/**", "/api/public/**").permitAll() // Products, etc.
+    .requestMatchers("/api/orders/**", "/api/payment/**").authenticated() // Protect orders/payment
+    .requestMatchers("/api/admin/orders").permitAll()
+    .anyRequest().permitAll()                                 // Static files etc.
+)
+
+                // .authorizeHttpRequests(auth -> auth
+                //         .requestMatchers("/api/auth/**").permitAll()
+                //         .requestMatchers("/api/admin/**").hasRole("ADMIN") // FIXED: Use hasRole instead of hasAuthority
+                //         .anyRequest().permitAll()
+                // )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
