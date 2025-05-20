@@ -19,6 +19,11 @@ public class ProductController {
 
     private final ProductService productService;
 
+    @GetMapping("/products/{id}")
+    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getProductById(id));
+    }
+
     @GetMapping("/products")
     public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
         return ResponseEntity.ok(productService.getAllProducts());
@@ -28,10 +33,25 @@ public class ProductController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ProductResponseDTO> createProduct(
             @RequestPart("product") ProductRequestDTO productRequest,
-            @RequestPart("images") MultipartFile imageFile
+            @RequestPart(value = "images", required = false) MultipartFile imageFile
     ) {
-    System.out.println("Creating product");
-
         return ResponseEntity.ok(productService.createProduct(productRequest, imageFile));
+    }
+    
+    @PutMapping(value = "/admin/products/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ProductResponseDTO> updateProduct(
+            @PathVariable Long id,
+            @RequestPart("product") ProductRequestDTO productRequest,
+            @RequestPart(value = "images", required = false) MultipartFile imageFile
+    ) {
+        return ResponseEntity.ok(productService.updateProduct(id, productRequest, imageFile));
+    }
+    
+    @DeleteMapping("/admin/products/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -18,6 +18,7 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    // Place new order
     @PostMapping
     public ResponseEntity<OrderResponseDTO> placeOrder(
             @AuthenticationPrincipal User user,
@@ -26,11 +27,13 @@ public class OrderController {
         return ResponseEntity.ok(orderService.placeOrder(user, request));
     }
 
+    // Get current user's orders
     @GetMapping("/user")
     public ResponseEntity<List<OrderResponseDTO>> getUserOrders(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(orderService.getUserOrders(user));
     }
 
+    // Get specific order details for a user
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponseDTO> getOrderDetails(
             @AuthenticationPrincipal User user,
@@ -39,18 +42,9 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrderDetails(user, orderId));
     }
 
-    // ✅ Anyone authenticated can access all orders now (was admin-only)
-  
-//     @GetMapping("/api/admin/orders")
-// public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
-//     List<OrderResponseDTO> orders = orderService.getAllOrders();
-//     return ResponseEntity.ok(orders);
-// }
-@GetMapping("/admin")
-public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
-    List<OrderResponseDTO> orders = orderService.getAllOrders();
-    return ResponseEntity.ok(orders);
-}
-
-
+    // Admin: Get all orders
+    @GetMapping("/admin")
+    public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrders());
+    }
 }

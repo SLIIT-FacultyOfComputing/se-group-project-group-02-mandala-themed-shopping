@@ -39,11 +39,7 @@ public class CartService {
 
         // Get or create user's cart
         Cart cart = null;
-// <<<<<<< nipun-backend
-//         Optional<Cart> optionalCart = cartRepository.findByUserId(userId);
-// =======
-       Optional<Cart> optionalCart = cartRepository.findById(userId);
-// >>>>>>> Main-Test
+        Optional<Cart> optionalCart = cartRepository.findByUserId(userId);
         if (optionalCart.isPresent()) {
             cart = optionalCart.get();
         } else {
