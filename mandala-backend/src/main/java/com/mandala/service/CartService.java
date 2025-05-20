@@ -39,7 +39,7 @@ public class CartService {
 
         // Get or create user's cart
         Cart cart = null;
-        Optional<Cart> optionalCart = cartRepository.findById(userId);
+        Optional<Cart> optionalCart = cartRepository.findByUserId(userId);
         if (optionalCart.isPresent()) {
             cart = optionalCart.get();
         } else {

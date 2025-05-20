@@ -1,16 +1,15 @@
 package com.mandala.service;
 
-import com.mandala.dto.ProductDTO;
+import com.mandala.dto.ProductRequestDTO;
 import com.mandala.dto.ProductResponseDTO;
-import com.mandala.models.Product;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface ProductService {
+    ProductResponseDTO createProduct(ProductRequestDTO dto, MultipartFile image);
     List<ProductResponseDTO> getAllProducts();
     ProductResponseDTO getProductById(Long id);
-    Product getProductEntityById(Long id); // ✅ Add this
-    ProductResponseDTO createProduct(ProductDTO dto);
-    ProductResponseDTO updateProduct(Long id, ProductDTO dto);
+    ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto, MultipartFile image);
     void deleteProduct(Long id);
 }

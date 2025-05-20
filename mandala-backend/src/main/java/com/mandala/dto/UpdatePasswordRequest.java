@@ -11,5 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdatePasswordRequest {
       private String username;
+      private String currentPassword;
       private String password;
 }

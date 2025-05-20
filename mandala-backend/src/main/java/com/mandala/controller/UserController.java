@@ -2,10 +2,15 @@ package com.mandala.controller;
 
 import com.mandala.dto.UpdateUserDTO;
 import com.mandala.dto.UserDTO;
+import com.mandala.dto.UserResponseDTO;
+import com.mandala.dto.UserUpdateRequestDTO;
+import com.mandala.models.User;
+import com.mandala.repository.UserRepository;
 import com.mandala.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +22,9 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
+
+    // === Admin endpoints ===
 
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
@@ -29,7 +37,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UpdateUserDTO dto) {
+    public ResponseEntity<Object> updateUser(@PathVariable Long id, @RequestBody UpdateUserDTO dto) {
         return ResponseEntity.ok(userService.updateUser(id, dto));
     }
 
@@ -37,5 +45,41 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // === Self-profile endpoints (for USER and ADMIN) ===
+
+    @GetMapping("/me")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<UserResponseDTO> getCurrentUser(@AuthenticationPrincipal User user) {
+        UserResponseDTO dto = new UserResponseDTO();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setPhoneNumber(user.getPhoneNumber());
+        dto.setRole(user.getRole());
+        return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/me")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<UserResponseDTO> updateCurrentUser(
+            @AuthenticationPrincipal User user,
+            @RequestBody UserUpdateRequestDTO update
+    ) {
+        user.setUsername(update.getUsername());
+        user.setEmail(update.getEmail());
+        user.setPhoneNumber(update.getPhoneNumber());
+
+        userRepository.save(user);
+
+        UserResponseDTO dto = new UserResponseDTO();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setPhoneNumber(user.getPhoneNumber());
+        dto.setRole(user.getRole());
+
+        return ResponseEntity.ok(dto);
     }
 }

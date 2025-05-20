@@ -42,7 +42,7 @@ export default function LoginPage() {
       } else {
         setError("Invalid login credentials");
       }
-    } catch {
+    } catch (err) {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -78,7 +78,7 @@ export default function LoginPage() {
       } else {
         setError(data.message || "Registration failed.");
       }
-    } catch  {
+    } catch (err) {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);

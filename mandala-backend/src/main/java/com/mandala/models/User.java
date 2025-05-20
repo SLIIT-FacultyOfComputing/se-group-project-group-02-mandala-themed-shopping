@@ -57,6 +57,15 @@ public class User implements UserDetails {
 
     @Column(name = "phone_number", nullable = true, unique = true, length = 13)
     private String phoneNumber;
+    @Column(name = "bio")
+private String bio;
+
+@Column(name = "location")
+private String location;
+
+@Column(name = "website")
+private String website;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
