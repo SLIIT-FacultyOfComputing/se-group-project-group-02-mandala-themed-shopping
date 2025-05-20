@@ -14,7 +14,7 @@ export default function PaymentConfirmationPage() {
   const { data: session } = useSession()
 
   useEffect(() => {
-    if (!session) return;
+    if (!session || !searchParams) return;
 
     const payment_intent = searchParams.get('payment_intent')
     const payment_intent_client_secret = searchParams.get('payment_intent_client_secret')
