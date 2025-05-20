@@ -101,9 +101,8 @@ export default function ProductsPage() {
       });
       localStorage.setItem("wishlist", JSON.stringify(wishlist));
       alert("Added to wishlist");
-    } else {
-      alert("Already in wishlist");
     }
+    // Do nothing if already in wishlist
   };
 
   return (
@@ -155,7 +154,19 @@ export default function ProductsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredProducts.map((product) => (
             <Link key={product.id} href={`/products/${product.id}`}>
-              <Card className="bg-white/80 backdrop-blur-md hover:shadow-lg transition-shadow hover:cursor-pointer">
+              <Card className="relative bg-white/80 backdrop-blur-md hover:shadow-lg transition-shadow hover:cursor-pointer">
+                {/* Floating Wishlist Button */}
+                <Button
+                  size="icon"
+                  className="absolute top-3 right-3 bg-black/80 hover:bg-purple-700 text-white rounded-full z-10"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleAddToWishlist(product);
+                  }}
+                >
+                  <Heart className="h-5 w-5" />
+                  <span className="sr-only">Add to Wishlist</span>
+                </Button>
                 <div className="aspect-square overflow-hidden">
                   <img
                     src={product.images[0] || "/placeholder.svg"}
@@ -186,24 +197,15 @@ export default function ProductsPage() {
                       : `Only ${product.stockQuantity} left`}
                   </p>
                 </CardContent>
-                <CardFooter className="flex gap-2">
+                <CardFooter>
                   <Button
                     className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                     onClick={(e) => {
-                      e.preventDefault(); // prevent navigation on click
+                      e.preventDefault();
                       handleAddToCart(product.id);
                     }}
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" /> Add to Cart
-                  </Button>
-                  <Button
-                    className="w-full bg-black hover:bg-gray-800 text-white"
-                    onClick={(e) => {
-                      e.preventDefault(); // prevent navigation on click
-                      handleAddToWishlist(product);
-                    }}
-                  >
-                    <Heart className="h-4 w-4 mr-2" /> Wishlist
                   </Button>
                 </CardFooter>
               </Card>
