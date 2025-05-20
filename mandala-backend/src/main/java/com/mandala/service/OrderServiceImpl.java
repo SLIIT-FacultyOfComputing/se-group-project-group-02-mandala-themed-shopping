@@ -13,6 +13,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
@@ -52,17 +55,30 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setQuantity(itemDTO.getQuantity());
             orderItem.setSelectedColor(itemDTO.getSelectedColor());
             orderItem.setSelectedSize(itemDTO.getSelectedSize());
+            
+            // Make sure we set the price from the product
+            BigDecimal currentPrice = product.getPrice();
+            orderItem.setPrice(currentPrice);
 
-            BigDecimal itemTotal = product.getPrice().multiply(BigDecimal.valueOf(itemDTO.getQuantity()));
+            // Calculate the line total with the product price and quantity
+            BigDecimal itemTotal = currentPrice.multiply(BigDecimal.valueOf(itemDTO.getQuantity()));
             subtotal = subtotal.add(itemTotal);
 
             orderItems.add(orderItem);
         }
 
+        // Set the calculated totals
         order.setItems(orderItems);
         order.setSubtotal(subtotal);
-        order.setShippingCost(BigDecimal.valueOf(300)); // Flat shipping
-        order.setTotal(subtotal.add(order.getShippingCost()));
+        
+        // Apply shipping cost (fixed at 300 for now)
+        BigDecimal shippingCost = BigDecimal.valueOf(300); 
+        order.setShippingCost(shippingCost);
+        
+        // Calculate final total
+        BigDecimal totalAmount = subtotal.add(shippingCost);
+        order.setTotal(totalAmount);
+        
         order.setPaid(false);
 
         Order savedOrder = orderRepository.save(order);
@@ -85,28 +101,34 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDTO getOrderDetails(User user, Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
+        // Ensure the user can only access their own orders
         if (!order.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Unauthorized access to order");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized access to order");
         }
 
         return mapToDto(order);
     }
 
-    // @Override
-    // public List<OrderResponseDTO> getAllOrders() {
-    //     return orderRepository.findAll().stream()
-    //             .map(this::mapToDto)
-    //             .collect(Collectors.toList());
-    // }
+    @Override
+    public OrderResponseDTO getAnyOrderDetails(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        // No user check here, as this is for admin
+        return mapToDto(order);
+    }
 
     @Transactional
-    public void updateOrderStatus(Long orderId, Order.Status status) {
+    public OrderResponseDTO updateOrderStatus(Long orderId, String status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
-        order.setStatus(status);
+        // Convert status string to enum, handle potential errors
+        Order.Status newStatus = Order.Status.valueOf(status.toUpperCase());
+        order.setStatus(newStatus);
         orderRepository.save(order);
+        return mapToDto(order);
     }
 
     private OrderResponseDTO mapToDto(Order order) {
