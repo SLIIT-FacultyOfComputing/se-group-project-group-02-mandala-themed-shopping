@@ -58,8 +58,13 @@ export default function CartPage() {
   }))
 
   const totalPrice = enrichedCart.reduce((total, item) => total + (item.product?.price || 0) * item.quantity, 0)
-
   const totalItems = enrichedCart.reduce((total, item) => total + item.quantity, 0)
+  
+  // Define shipping cost constant
+  const shippingCost = 300
+  
+  // Calculate final total including shipping
+  const finalTotal = totalPrice + shippingCost
 
   const handleRemove = (productId: number) => {
     const updated = cartItems.filter((item) => item.productId !== productId)
@@ -122,7 +127,7 @@ export default function CartPage() {
                 className="mt-4 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 rounded-full px-8 py-6 text-white"
                 asChild
               >
-                <Link href="/shop">Discover Products</Link>
+                <Link href="/products">Discover Products</Link>
               </Button>
             </div>
           </Card>
@@ -201,7 +206,7 @@ export default function CartPage() {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-purple-600">Shipping</span>
-                      <span className="font-medium text-purple-800">Free</span>
+                      <span className="font-medium text-purple-800">{shippingCost.toLocaleString()} LKR</span>
                     </div>
                   </div>
 
@@ -209,7 +214,7 @@ export default function CartPage() {
 
                   <div className="flex justify-between">
                     <span className="font-medium text-purple-800">Total</span>
-                    <span className="font-bold text-lg text-purple-900">{totalPrice.toLocaleString()} LKR</span>
+                    <span className="font-bold text-lg text-purple-900">{finalTotal.toLocaleString()} LKR</span>
                   </div>
                 </CardContent>
                 <CardFooter>

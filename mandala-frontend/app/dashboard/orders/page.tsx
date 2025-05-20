@@ -207,7 +207,9 @@ export default function AdminOrdersPage() {
           </Card>
         ) : (
           <div className="space-y-6">
-            {filteredOrders.map((order) => (
+            {filteredOrders.map((order) => {
+              console.log('Rendering order ID:', order.id);
+              return (
               <Card
                 key={order.id}
                 className="border-0 shadow-lg bg-white/90 backdrop-blur-sm rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-300"
@@ -274,23 +276,19 @@ export default function AdminOrdersPage() {
                     </div>
 
                     <div className="flex justify-end">
-                      <Button
-                        variant="outline"
-                        className="rounded-full border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 group-hover:border-purple-300 transition-colors"
-                        asChild
-                      >
-                        <Link href={`/admin/orders/${order.id}`}>
-                          <span className="flex items-center gap-1">
-                            Manage Order
-                            <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-                          </span>
-                        </Link>
-                      </Button>
+                      <Link href={`/dashboard/orders/${order.id}`}>
+                        <Button
+                          variant="ghost"
+                          className="flex items-center gap-1 text-purple-600 hover:text-purple-800 hover:bg-purple-50 transition-colors pr-0"
+                        >
+                          Manage Order <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            )})}
           </div>
         )}
       </div>
