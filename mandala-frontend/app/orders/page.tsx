@@ -10,7 +10,7 @@ import Link from "next/link"
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-
+ 
   useEffect(() => {
     axios
       .get("/api/orders/user")
@@ -182,7 +182,7 @@ export default function OrdersPage() {
                                 'Accept': 'application/pdf'
                               },
                               timeout: 10000, // Set a reasonable timeout (10 seconds)
-                              validateStatus: (status: number) => status === 200 // Only accept 200 status
+                              validateStatus: (status) => status === 200 // Only accept 200 status
                             });
                             
                             console.log('Response received:', {
