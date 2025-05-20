@@ -1,8 +1,8 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link"; // ✅ ADDED
 import {
   Card,
   CardContent,
@@ -11,13 +11,16 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ShoppingCart, Heart } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { addToCart } from "@/app/cart/utils/cartUtils";
 import {
-  ShoppingCart,
-  Heart,
-  Search,
-  Filter,
-  ArrowDownWideNarrow,
-} from "lucide-react";
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 interface Product {
   id: number;
@@ -31,84 +34,77 @@ interface Product {
 }
 
 export default function ProductsPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
-
-  // UI filters
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [category, setCategory] = useState("all");
-  const [sort, setSort] = useState("");
+  const [category, setCategory] = useState("All");
+  const [sort, setSort] = useState("none");
+
+  const router = useRouter();
 
   useEffect(() => {
-    if (session?.accessToken) fetchProducts();
-  }, [session?.accessToken]);
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/api/products");
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setProducts(data);
+          setFilteredProducts(data);
+        }
+      } catch (error) {
+        console.error("Error loading products:", error);
+      }
+    };
 
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch("/api/products", {
-        headers: {
-          Authorization: `Bearer ${session?.accessToken}`,
-        },
-      });
+    fetchProducts();
+  }, []);
 
-      const data = await res.json();
-      setProducts(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Error loading products", err);
+  useEffect(() => {
+    let updated = [...products];
+
+    if (category !== "All") {
+      updated = updated.filter(
+        (p) => p.category.toLowerCase() === category.toLowerCase()
+      );
     }
+
+    if (searchTerm.trim() !== "") {
+      updated = updated.filter((p) =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (sort === "low") {
+      updated.sort((a, b) => a.price - b.price);
+    } else if (sort === "high") {
+      updated.sort((a, b) => b.price - a.price);
+    }
+
+    setFilteredProducts(updated);
+  }, [products, searchTerm, category, sort]);
+
+  const handleAddToCart = (productId: number) => {
+    addToCart(productId, 1);
+    alert("Item added to cart!");
   };
 
-  const filtered = products
-    .filter((p) =>
-      p.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter((p) => (category === "all" ? true : p.category === category))
-    .sort((a, b) => {
-      if (sort === "price_asc") return a.price - b.price;
-      if (sort === "price_desc") return b.price - a.price;
-      return 0;
-    });
+  const handleAddToWishlist = (product: Product) => {
+    const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+    const exists = wishlist.find((item: any) => item.productId === product.id);
 
-  const handleAddToCart = async (productId: number) => {
-    try {
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session?.accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ productId, quantity: 1 }),
+    if (!exists) {
+      wishlist.push({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0] || "",
       });
-      if (!res.ok) throw new Error("Failed to add to cart");
-      alert("Added to cart");
-    } catch  {
-      alert("Error adding to cart");
-    }
-  };
-
-  const handleAddToWishlist = async (productId: number) => {
-    try {
-      const res = await fetch("/api/wishlist", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session?.accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ productId }),
-      });
-      if (!res.ok) throw new Error("Failed to add to wishlist");
+      localStorage.setItem("wishlist", JSON.stringify(wishlist));
       alert("Added to wishlist");
-    } catch  {
-      alert("Error adding to wishlist");
+    } else {
+      alert("Already in wishlist");
     }
   };
-
-  if (status === "loading") return <p>Loading...</p>;
-  if (status === "unauthenticated") {
-    router.push("/login");
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 via-white to-purple-200">
@@ -117,105 +113,101 @@ export default function ProductsPage() {
           <h1 className="text-4xl font-bold text-purple-800 mb-2">
             Browse Our Mandala Collection
           </h1>
-          <p className="text-purple-600">Use search and filters to explore</p>
+          <p className="text-purple-600">
+            Discover beautiful Mandala-themed items.
+          </p>
         </div>
 
-        {/* Search & Filters */}
-        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8">
-          <div className="relative w-full md:w-1/3">
-            <Search className="absolute left-3 top-3 h-4 w-10 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full border border-gray-300 rounded-md pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+        {/* Filters */}
+        <div className="flex flex-wrap gap-4 justify-center mb-8">
+          <Input
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-60 bg-white shadow-sm"
+          />
 
-          <div className="flex gap-4 flex-1 min-w-[250px]">
-            <div className="relative w-full">
-              <Filter className="absolute left-3 top-3 h-4 w- text-gray-400" />
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="appearance-none pl-10 pr-6 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
-              >
-                <option value="all">All Categories</option>
-                <option value="Clothes">Clothes</option>
-                <option value="Accessories">Accessories</option>
-                <option value="Spiritual">Spiritual</option>
-                <option value="Decor">Decor</option>
-              </select>
-            </div>
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger className="w-48 bg-white shadow-sm">
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Categories</SelectItem>
+              <SelectItem value="Accessories">Accessories</SelectItem>
+              <SelectItem value="Clothes">Clothes</SelectItem>
+              <SelectItem value="Cards">Cards</SelectItem>
+            </SelectContent>
+          </Select>
 
-            <div className="relative">
-              <ArrowDownWideNarrow className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="appearance-none pl-10 pr-6 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
-              >
-                <option value="">Sort by</option>
-                <option value="price_asc">Price Low to High</option>
-                <option value="price_desc">Price High to Low</option>
-              </select>
-            </div>
-          </div>
+          <Select value={sort} onValueChange={setSort}>
+            <SelectTrigger className="w-48 bg-white shadow-sm">
+              <SelectValue placeholder="Sort by price" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Default</SelectItem>
+              <SelectItem value="low">Price: Low to High</SelectItem>
+              <SelectItem value="high">Price: High to Low</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filtered.map((product) => (
-            <Card
-              key={product.id}
-              className="bg-white/80 backdrop-blur-md overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              <div className="aspect-square overflow-hidden">
-                <img
-                  src={product.images[0] || "/placeholder.svg"}
-                  alt={product.name}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-xl font-semibold text-purple-800">
-                      {product.name}
-                    </CardTitle>
-                    <span className="inline-block mt-2 px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
-                      {product.category}
-                    </span>
-                  </div>
-                  <p className="text-2xl font-bold text-purple-800">
-                    {product.price} LKR
-                  </p>
+          {filteredProducts.map((product) => (
+            <Link key={product.id} href={`/products/${product.id}`}>
+              <Card className="bg-white/80 backdrop-blur-md hover:shadow-lg transition-shadow hover:cursor-pointer">
+                <div className="aspect-square overflow-hidden">
+                  <img
+                    src={product.images[0] || "/placeholder.svg"}
+                    alt={product.name}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">{product.description}</p>
-                <p className="mt-2 text-sm text-purple-600">
-                  {product.stockQuantity > 10
-                    ? "In Stock"
-                    : `Only ${product.stockQuantity} left`}
-                </p>
-              </CardContent>
-              <CardFooter className="flex gap-2">
-                <Button
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                  onClick={() => handleAddToCart(product.id)}
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" /> Add to Cart
-                </Button>
-                <Button
-                  className="w-full bg-black hover:bg-gray-800 text-white"
-                  onClick={() => handleAddToWishlist(product.id)}
-                >
-                  <Heart className="h-4 w-4 mr-2" /> Wishlist
-                </Button>
-              </CardFooter>
-            </Card>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-xl font-semibold text-purple-800">
+                        {product.name}
+                      </CardTitle>
+                      <span className="mt-2 px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
+                        {product.category}
+                      </span>
+                    </div>
+                    <p className="text-2xl font-bold text-purple-800">
+                      {product.price} LKR
+                    </p>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">{product.description}</p>
+                  <p className="mt-2 text-sm text-purple-600">
+                    {product.stockQuantity > 10
+                      ? "In Stock"
+                      : `Only ${product.stockQuantity} left`}
+                  </p>
+                </CardContent>
+                <CardFooter className="flex gap-2">
+                  <Button
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                    onClick={(e) => {
+                      e.preventDefault(); // prevent navigation on click
+                      handleAddToCart(product.id);
+                    }}
+                  >
+                    <ShoppingCart className="h-4 w-4 mr-2" /> Add to Cart
+                  </Button>
+                  <Button
+                    className="w-full bg-black hover:bg-gray-800 text-white"
+                    onClick={(e) => {
+                      e.preventDefault(); // prevent navigation on click
+                      handleAddToWishlist(product);
+                    }}
+                  >
+                    <Heart className="h-4 w-4 mr-2" /> Wishlist
+                  </Button>
+                </CardFooter>
+              </Card>
+            </Link>
           ))}
         </div>
       </div>
