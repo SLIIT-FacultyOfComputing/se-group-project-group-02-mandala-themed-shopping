@@ -15,4 +15,7 @@ public interface OrderService {
 
     List<OrderResponseDTO> getAllOrders(); // ✅ newly added
     
+    OrderResponseDTO updateOrderStatus(Long orderId, String status);
+
+    OrderResponseDTO getAnyOrderDetails(Long orderId); // New method for admin access
 }
